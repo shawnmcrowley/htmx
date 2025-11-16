@@ -13,7 +13,7 @@ app.use(express.static('public'));
 
 app.get('/data', (req, res) => {
     console.log("Received request for /data");
-    const htmlContent = `<p>This content was loaded from the server via HTMX using GET Method!</p><p><a href="/">Back to Dashboard</a></p>`;
+    const htmlContent = `<details><a href="/">Back to Dashboard</a><summary>This content was loaded from the server via HTMX using GET Method!</summary></details>`;
     res.send(htmlContent);
 });
  
