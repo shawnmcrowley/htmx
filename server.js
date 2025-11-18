@@ -13,17 +13,25 @@ app.use(express.static('public'));
 
 app.get('/data', (req, res) => {
     console.log("Received request for /data");
-    const htmlContent = `<details><a href="/">Back to Dashboard</a><summary>This content was loaded from the server via HTMX using GET Method!</summary></details>`;
+    const htmlContent = `<details><p><a href="/">Back to Dashboard</a><summary>This content was loaded from the server via HTMX using GET Method!</summary></details>`;
     res.send(htmlContent);
 });
  
 // Post Route for Contact Form Submission
 
-app.post('/contacts', (req, res) => {
-    // Process form submission, save data
-    const newContactName = req.body.name;
-    // Return HTML for the new contact list item
-    res.send(`<li>${newContactName}</li>`);
+app.get('/dialog', (req, res) => {
+    
+    const htmlContent = `<dialog id="demo">
+  <h2>🎉 This is a Native Modal</h2>
+  <p>No JavaScript library needed.</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<button onclick="document.getElementById('demo').showModal()">
+  Open Modal
+</button>`;
+    // Return Dialog
+    res.send(htmlContent);
 });
 
 /**
