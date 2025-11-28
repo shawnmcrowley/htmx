@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://unpkg.com/htmx.org@2.0.8"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Client-side templating dependencies required by templates.html when loaded into the panel -->
+    <script src="https://unpkg.com/nunjucks@3.2.4/browser/nunjucks.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/client-side-templates.js"></script>
     <title>Introduction to HTMLX</title>
     <style>
       body {
@@ -13,19 +16,107 @@
         background-color: #f0f0f0;
       }
       .container {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
         background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 28px;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
       }
       h1 {
-        color: #333;
+        color: #222;
+        margin: 0 0 12px 0;
+        font-size: 1.6rem;
       }
       p {
         line-height: 1.6;
-        color: #666;
+        color: #555;
+      }
+
+      /* Button layout */
+      .button-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      /* Button base: unified neutral look, accent on hover */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #e6e9ef;
+        background: white;
+        color: #374151;
+        transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease, color 140ms ease;
+        box-shadow: 0 6px 12px rgba(16, 24, 40, 0.04);
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      /* Hover accent applied for all buttons */
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(16,24,40,0.12);
+        background: linear-gradient(180deg,#3b82f6,#2563eb);
+        color: white;
+        border-color: transparent;
+      }
+
+      /* Single output panel placed below buttons; hidden when empty */
+      .panel {
+        margin-top: 18px;
+        width: 100%;
+        min-height: 60px;
+        background: #fafafa;
+        border: 1px solid #eef2f7;
+        padding: 12px;
+        border-radius: 8px;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(16,24,40,0.04);
+        position: relative;
+      }
+
+      /* hide panel when it has no child nodes */
+      .panel:empty {
+        display: none;
+      }
+
+      /* spinner overlay */
+      .spinner-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.7);
+        border-radius: 8px;
+      }
+
+      .spinner-overlay.visible { display: flex; }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e6e6e6;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      @media (max-width: 520px) {
+        .button-row { gap: 8px; }
+        .btn { flex: 1 1 100%; }
       }
     </style>
   </head>
@@ -34,14 +125,60 @@
       <h1>HTMX Development Environment</h1>
      
       <div id="content">
-         <button hx-get="https://bjadoe-ip-100-14-118-58.tunnelmole.net/data" hx-target="#content" hx-swap="outerHTML">
-        Load Data
-      </button>
+        <div class="button-row">
+          <button class="btn" hx-get="/data" hx-target="#panel-output" hx-swap="innerHTML" aria-controls="panel-output">
+            Load Data
+          </button>
+
+          <button class="btn" hx-get="/dialog" hx-target="#panel-output" hx-swap="innerHTML" aria-controls="panel-output">
+            Pop Up Dialog
+          </button>
+
+          <a class="btn" hx-get="/templates" hx-target="#panel-output" hx-swap="innerHTML" role="button" aria-controls="panel-output">Templates</a>
+
+          <button class="btn" hx-get="/health" hx-target="#panel-output" hx-swap="innerHTML" aria-controls="panel-output">
+            Health
+          </button>
+        </div>
+
+        <div id="panel-output" class="panel" aria-live="polite">
+          <div id="panel-spinner" class="spinner-overlay" aria-hidden="true">
+            <div class="spinner" aria-hidden="true"></div>
+          </div>
+        </div>
       </div>
-      <div id="dialog-button">
-      <button hx-get="https://bjadoe-ip-100-14-118-58.tunnelmole.net/dialog" hx-target="#dialog-button" hx-swap="outerHTML">Pop Up Dialog</button>
     </div>
-    <a href="templates.html">Go to Templates Example</a>
-    </div>
+    <script>
+      // Show spinner overlay when HTMX requests target the panel
+      document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        try {
+          const target = evt.detail.target;
+          if (target && target.id === 'panel-output') {
+            const overlay = document.getElementById('panel-spinner');
+            if (overlay) overlay.classList.add('visible');
+          }
+        } catch (e) { /* ignore */ }
+      });
+
+      document.body.addEventListener('htmx:afterRequest', function(evt) {
+        try {
+          const target = evt.detail.target;
+          if (target && target.id === 'panel-output') {
+            const overlay = document.getElementById('panel-spinner');
+            if (overlay) overlay.classList.remove('visible');
+          }
+        } catch (e) { /* ignore */ }
+      });
+
+      // After content is swapped into the panel, trigger processing of newly injected HTMX elements
+      document.body.addEventListener('htmx:afterSwap', function(evt) {
+        try {
+          if (evt.detail.target && evt.detail.target.id === 'panel-output') {
+            // Re-process the swapped content so HTMX attributes (like hx-ext) are recognized
+            htmx.process(evt.detail.target);
+          }
+        } catch (e) { /* ignore */ }
+      });
+    </script>
   </body>
 </html>
