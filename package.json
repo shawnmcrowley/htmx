@@ -11,7 +11,6 @@
     "start": "node --watch server.js"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "htmx.org": "^2.0.8"
+    "express": "^5.1.0"
   }
 }
