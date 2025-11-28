@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>3rd Party API Test with JSON Response Using Templates</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/client-side-templates.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nunjucks@3.2.4/browser/nunjucks.min.js"></script>
+  </head>
+  <body>
+    <!--The code for rendering-->
+        <h1>JSON Templates</h1>
+    <p>HTMX JSON API Test</p>
+    <div hx-ext="client-side-templates">
+      <div
+        hx-get="https://api.spaceflightnewsapi.net/v4/blogs/"
+        hx-trigger="load"
+        nunjucks-template="blogs-template"
+        hx-request='{"noHeaders": true}'
+      >
+        <template id="blogs-template">
+          {% if not previous %}
+          <i>Found {{count}} articles.</i>
+          {% endif %}
+
+          {% for blog in results %}
+          <div>
+            <hr />
+            <h2>
+              <a href="{{blog.url}}" target="_blank">
+                {{blog.title}}
+              </a>
+            </h2>
+            <h4>
+              Published by {{blog.news_site}}, {{blog.published_at | truncate(15, true, "")}}
+            </h4>
+            <p>{{blog.summary}}</p>
+          </div>
+          {% endfor %}
+        </template>
+      </div>
+    </div>
+
+  </body>
+</html>
