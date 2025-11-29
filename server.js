@@ -12,7 +12,7 @@ app.use(express.static("public"));
 
 app.get("/data", (req, res) => {
   console.log("Received request for /data");
-  const htmlContent = `<details><p><a href="/">Back to Dashboard</a><summary>This content was loaded from the server via HTMX using GET Method!</summary></details>`;
+  const htmlContent = `<details>Loading more content...<summary>This content was loaded from the server via HTMX using GET Method!</summary></details>`;
   res.send(htmlContent);
 });
 
@@ -34,7 +34,6 @@ app.get("/dialog", (req, res) => {
 });
 
 
-// Add Get Method Returning JSON and Using HTMX Templates
 
 /**
  * Health check endpoint `/health`
@@ -45,6 +44,7 @@ app.get("/dialog", (req, res) => {
  * @return timestamp : Time of response from server
  */
 app.get("/health", (req, res) => {
+  console.log("Received request for /health");
   const healthcheck = {
     uptime: process.uptime(),
     message: "OK",
@@ -73,6 +73,7 @@ app.get("/health", (req, res) => {
 
 // Server-side templates endpoint: fetch API and render as HTML
 app.get("/templates", async (req, res) => {
+  console.log("Received request for /templates");
   try {
     const apiUrl = "https://api.spaceflightnewsapi.net/v4/blogs/";
     const response = await fetch(apiUrl);
@@ -80,7 +81,7 @@ app.get("/templates", async (req, res) => {
 
     // Build HTML from the API response
     let html = `<h1>JSON Templates</h1>
-<p>HTMX JSON API Test</p>
+<p>HTMX JSON API with Client Side Templates</p>
 <p><strong>Found ${data.count} articles</strong></p>`;
 
     if (data.results && data.results.length > 0) {
